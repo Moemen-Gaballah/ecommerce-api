@@ -25,6 +25,11 @@ Email/Password: Exist in postman collection
 Email: `moemengaballa@gmail.com`
 Password: `password`
 
+
+For run test 
+`php artisan test
+`
+
 ### Done
 
 - [x] Login using sanctum
