@@ -17,7 +17,9 @@ class ProductController extends Controller
      * Display a listing of the resource.
      */
     public function index(Request $request)
-    { // TODO set request Validation for products
+    {
+        // TODO set request Validation for fetch products like (perPage, page, filter) from client
+        // TODO use laravel scout for search or elastic search or basic index Depend on business
         $cacheKey = $this->generateCacheKeyForProduct($request);
         $cacheDuration = now()->addMinutes(30); // Cache for 30 minutes
 
