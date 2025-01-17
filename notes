@@ -1,0 +1,4 @@
+1- should add (softDeleted && created_by && slug && ...etc) for product
+2- should add (price && discount or coupon if had) for order_product
+3- should add (total && discount or coupon if had) for order
+4-
