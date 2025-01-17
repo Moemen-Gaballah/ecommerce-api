@@ -21,6 +21,6 @@ class SendOrderNotification
     public function handle(object $event): void
     {
         // logic for send email
-        // TODO
+        // TODO And use queue
     }
 }

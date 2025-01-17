@@ -5,12 +5,16 @@ namespace App\Http\Controllers\Api;
 use App\Events\OrderCreated;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\Orders\StoreOrderRequest;
+use App\Http\Resources\Orders\OrderResource;
 use App\Models\Order;
 use App\Models\Product;
+use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class OrderController extends Controller
 {
+    use ApiResponse;
     /**
      * Display a listing of the resource.
      */
@@ -32,20 +36,34 @@ class OrderController extends Controller
      */
     public function store(StoreOrderRequest $request)
     {
-        $order = Order::create(['user_id' => $request->user()->id]);
+        try {
+            DB::beginTransaction();
 
-        foreach ($request->products as $product) {
-            $productModel = Product::find($product['id']);
-            if ($productModel->stock < $product['quantity']) {
-                return response()->json(['error' => 'Insufficient stock'], 400);
+            $order = Order::create(['user_id' => $request->user()->id]);
+
+            foreach ($request->products as $product) {
+                $productModel = Product::find($product['id']);
+                if ($productModel->quantity < $product['quantity']) {
+                    return $this->errorResponse('Insufficient quantity', 400);
+                }
+                $productModel->decrement('quantity', $product['quantity']);
+                $order->products()->attach($product['id'], ['quantity' => $product['quantity']]);
             }
-            $productModel->decrement('stock', $product['quantity']);
-            $order->products()->attach($product['id'], ['quantity' => $product['quantity']]);
+
+            OrderCreated::dispatch($order);
+
+            DB::commit();
+
+        } catch (\Exception $e) {
+
+            // An error occured; cancel the transaction...
+            DB::rollback();
+
+            //Todo create custom Exception and throw the error.
+            return $this->errorResponse("Something wrong happened", 500);
         }
 
-        OrderCreated::dispatch($order);
-
-        return response()->json($order, 201);
+        return $this->successResponse($order, "Order Created Successfully",201);
     }
 
     /**
@@ -53,8 +71,9 @@ class OrderController extends Controller
      */
     public function show(string $id)
     {
-        $order = Order::with('products')->findOrFail($id);
-        return response()->json($order);
+        $order = Order::where('user_id', auth()->id())->with('products')->findOrFail($id);
+
+        return $this->successResponse(new OrderResource($order));
     }
 
     /**
