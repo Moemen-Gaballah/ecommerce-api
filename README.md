@@ -53,6 +53,3 @@ For run test
 - [] Update Cache to redis
 - [] refactor many topic in my code write in code TODO (like filter)
 - etc...
-
-
-g
