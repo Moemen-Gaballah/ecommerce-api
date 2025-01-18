@@ -50,6 +50,7 @@ class OrderController extends Controller
                 $order->products()->attach($product['id'], ['quantity' => $product['quantity']]);
             }
 
+            // todo update cache
             OrderCreated::dispatch($order);
 
             DB::commit();
